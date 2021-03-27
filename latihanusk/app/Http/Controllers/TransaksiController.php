@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\KategoriModel;
+use App\ProdukModel;
 use App\TransaksiModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Carbon\Carbon;
 
 class TransaksiController extends Controller
 {
@@ -30,13 +33,51 @@ class TransaksiController extends Controller
      */
     public function create()
     {
-        $kategori = KategoriModel::all();
+        $kategori = KategoriModel::pluck('nama_kategori', 'id_kategori');
         $params = [
             'kategori' => $kategori,
             'title' => 'Tambah Transaksi'
         ];
 
         return view('transaksiTambah', $params);
+    }
+
+    public function getBarang($id)
+    {
+        $data = ProdukModel::where('id_kategori',$id)->pluck('nama_barang', 'id_barang');
+
+        return response()->json($data);
+    }
+
+    public function fillBarang($id)
+    {
+        $data = ProdukModel::where('id_barang', $id)->pluck('harga_barang');
+
+        return response()->json($data);
+    }
+
+    public function hitung(Request $request)
+    {
+        $request->validate([
+            'qty' => 'required'
+        ]);
+
+        $jumlah = $request->input('harga') * $request->input('qty');
+        if ($jumlah >= 150000) {
+            $diskon = ($jumlah*5)/100;
+            $total = $jumlah-$diskon;
+        }else{
+            $diskon = 0;
+            $total = $jumlah-$diskon;
+        }
+
+        $data = [
+            'jumlah_harga' => $jumlah,
+            'diskon' => $diskon,
+            'total_bayar' => $total
+        ];
+
+        return response()->json($data);
     }
 
     /**
@@ -47,7 +88,21 @@ class TransaksiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'barang' => 'required',
+            'qty' => 'required',
+            'bayar' => 'required'
+        ]);
+
+        $data = new TransaksiModel();
+        $data->id_barang = $request->input('barang');
+        $data->qty = $request->input('qty');
+        $data->total_bayar = $request->input('bayar');
+        $data->tgl_transaksi = Carbon::now();
+        $data->id_pengguna = Session::has('user');
+        $data->save();
+
+        return redirect('/transaksi')->with('success', 'Transaksi Berhasil');
     }
 
     /**

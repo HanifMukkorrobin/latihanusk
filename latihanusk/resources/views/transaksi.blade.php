@@ -2,7 +2,10 @@
 @section('title', $title)
 @section('content')
     <div class="container-fluid mt-2">
-        <a href="{{action('TransaksiController@create')}}" class="btn btn-primary btn-md">Tambah Transaksi</a>
+        @if(session('success'))
+            <div class="alert alert-success" role="alert">{{session('success')}}</div>
+        @endif
+        <a href="{{url('/transaksi/tambah')}}" class="btn btn-primary btn-md">Tambah Transaksi</a>
         <table class="table table-hover table-bordered text-center mt-2">
             <thead class="thead-dark">
             <tr>

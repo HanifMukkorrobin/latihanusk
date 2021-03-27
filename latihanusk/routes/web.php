@@ -23,5 +23,10 @@ Route::get('/logout', 'LoginController@logout');
 
 Route::middleware('cekLogin')->group(function(){
     Route::get('/beranda', 'BerandaController@index');
-    Route::resource('/transaksi', 'TransaksiController');
+    Route::get('/transaksi', 'TransaksiController@index');
+    Route::get('/transaksi/tambah', 'TransaksiController@create');
+    Route::post('/transaksi/input', 'TransaksiController@store');
+    Route::get('/transaksi/item/{id}', 'TransaksiController@getBarang');
+    Route::get('/transaksi/fill/{id}', 'TransaksiController@fillBarang');
+    Route::post('/transaksi/hitung', 'TransaksiController@hitung');
 });
