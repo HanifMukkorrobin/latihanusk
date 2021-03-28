@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\KategoriModel;
+use App\PenggunaModel;
 use App\ProdukModel;
 use App\TransaksiModel;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        $transaksi = TransaksiModel::select('*')->orderBy('tgl_transaksi', 'asc')->get();
+        $transaksi = TransaksiModel::select('*')->orderBy('tgl_transaksi', 'desc')->get();
         $params = [
             'data' => $transaksi,
             'title' => 'Transaksi'
@@ -94,12 +95,14 @@ class TransaksiController extends Controller
             'bayar' => 'required'
         ]);
 
+        $user = PenggunaModel::where('username', $request->session()->get('user'))->first();
+
         $data = new TransaksiModel();
         $data->id_barang = $request->input('barang');
         $data->qty = $request->input('qty');
         $data->total_bayar = $request->input('bayar');
         $data->tgl_transaksi = Carbon::now();
-        $data->id_pengguna = Session::has('user');
+        $data->id_pengguna = $user['id_pengguna'];
         $data->save();
 
         return redirect('/transaksi')->with('success', 'Transaksi Berhasil');
